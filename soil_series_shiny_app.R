@@ -6,6 +6,7 @@ library(sf)
 library(sp)
 library(here)
 library(aqp)
+library(rgeos)
 
 ## Placeholder for functions for the moment
 get_point_data<-function(plotID){

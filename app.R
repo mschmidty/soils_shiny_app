@@ -79,7 +79,7 @@ ui <- fluidPage(
       ),
       sliderInput("buffer", "Buffer Point (meters:",
                   min = 0, max = 2000,
-                  value = 800)
+                  value = 30)
     ),
     
     # Show a plot of the generated distribution
@@ -119,7 +119,8 @@ server <- function(input, output) {
       mapunit_name<-unique(mukey_tbl$muname)[k]
       
       filtered_mukey_table<-mukey_tbl%>%
-        dplyr::filter(mukey==current_mukey)
+        dplyr::filter(mukey==current_mukey)%>%
+        arrange(desc(comppct_r))
       
       mapunit_data<-lapply(1:nrow(filtered_mukey_table), function(i){
         
@@ -160,8 +161,27 @@ server <- function(input, output) {
             
           }
         })
+        if(esd_name!=no_data_esd){
+          edit_url_base<-"https://edit.jornada.nmsu.edu/catalogs/esd"
+          esd_id<-esd_data$ecoclassid
+          mlra<-esd_id%>%
+            str_extract(".{2,5}")%>%
+            sub('.', '', .)
+          esd_link<-paste(edit_url_base, mlra, esd_id, sep ="/")
+            
+          esd_info<-tags$h4(paste0("ESD: ",esd_name, " - "), tags$a(href=esd_link, paste0(" (", esd_id, ")")))
+          
+        }else{
+          esd_info<-tags$h4(paste0("ESD: ",esd_name))
+        }
         
-        c(list(tags$h3(paste0(series_name, " (", filtered_mukey_table$comppct_r[i],"%)")), tags$h4(paste0("ESD: ",esd_name))), narrative)
+        c(
+          list(
+            tags$h3(paste0(series_name, " (", filtered_mukey_table$comppct_r[i],"%)")), 
+            esd_info
+            ), 
+          narrative
+        )
         
       })
       
